@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -33,11 +33,19 @@ async function run() {
             res.send(result);
         })
 
-        //Product data Posting
+        //Product data Create fo Post
         app.post('/products', async (req, res) => {
             const newProduct = req.body;
             console.log(newProduct);
             const result = await productCollection.insertOne(newProduct);
+            res.send(result);
+        })
+
+        //Reading Data of a particular product or item
+        app.get('/products/:id',async(req,res)=>{
+            const id = req.params.id;
+            const query = {_id:new ObjectId(id)}
+            const result = await productCollection.findOne(query)
             res.send(result);
         })
 

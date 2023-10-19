@@ -24,7 +24,11 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
+
         const productCollection = client.db('productDB').collection('product');
+        const cartCollection = client.db('productDB').collection('mycart')
+
+//Product Related
 
         //read all data
         app.get('/products', async (req, res) => {
@@ -41,13 +45,48 @@ async function run() {
             res.send(result);
         })
 
-        //Reading Data of a particular product or item
-        app.get('/products/:id',async(req,res)=>{
+        //Reading Data of a particular product or item---put/details
+        app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id:new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await productCollection.findOne(query)
             res.send(result);
         })
+
+        app.put('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const option = { upsert: true };
+            const updatedProduct = req.body;
+            const product = {
+                $set: {
+                    name: updatedProduct.name,
+                    brand: updatedProduct.brand,
+                    type: updatedProduct.type,
+                    price: updatedProduct.price,
+                    photo: updatedProduct.photo,
+                    rating: updatedProduct.rating,
+                }
+            }
+            const result = await productCollection.updateOne(filter, product, option);
+            res.send(result);
+        })
+
+        //Cart Related
+
+        app.post('/mycart',async(req,res)=>{
+            const product = req.body;
+            const result = await cartCollection.insertOne(product)
+            res.send(result)
+        })
+
+        app.get('/mycart', async(req,res)=>{
+            const cursor = cartCollection.find()
+            const result = await cursor.toArray()
+            res.send(result);
+        })
+
+
 
 
         // Send a ping to confirm a successful connection
